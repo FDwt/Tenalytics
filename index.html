@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenalytics</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#16232E">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tenalytics">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   KONFIGURATION — hier kannst du Texte/Farben leicht anpassen
+   ============================================================ */
+:root{
+  --ink:#16232E;        /* dunkles Navy, Hintergrund */
+  --paper:#F6F3EC;       /* helles Papier-Weiß */
+  --paper-dim:#EDE8DC;
+  --teal:#177A73;        /* Primärfarbe, medizinisch/vertrauensvoll */
+  --teal-dark:#0F5852;
+  --rose:#C23B58;        /* Farbe der Testlinie / "positiv" */
+  --gold:#C99A3C;        /* Timer-Ring, Akzent */
+  --slate:#3B4652;
+  --slate-soft:#7C8791;
+  --line:#D9D2C2;
+  --ok:#3E7D5A;
+  --radius:14px;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+
+body{
+  background:var(--ink);
+  color:var(--paper);
+  font-family:'IBM Plex Sans', sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  padding:32px 16px 64px;
+  line-height:1.5;
+}
+
+.app{
+  width:100%;
+  max-width:560px;
+}
+
+/* ---------- Kopfbereich ---------- */
+.masthead{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin-bottom:28px;
+  padding-bottom:16px;
+  border-bottom:1px solid rgba(246,243,236,0.15);
+}
+.masthead .eyebrow{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--gold);
+}
+.masthead h1{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:22px;
+  margin-top:4px;
+  color:var(--paper);
+}
+.masthead .subtitle{
+  font-size:12.5px;
+  color:var(--slate-soft);
+  margin-top:2px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.brand-logo{
+  width:46px;
+  height:46px;
+  display:block;
+  flex-shrink:0;
+}
+.panel-count{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--slate-soft);
+  text-align:right;
+}
+
+/* ---------- Karten ---------- */
+.card{
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:var(--radius);
+  padding:28px 26px;
+  margin-bottom:18px;
+}
+.card h2{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:19px;
+  margin-bottom:10px;
+  color:var(--ink);
+}
+.card p{
+  font-size:14.5px;
+  color:var(--slate);
+  margin-bottom:14px;
+}
+.hidden{display:none !important;}
+
+/* ---------- Kassetten-Illustration (Signatur-Element) ---------- */
+.cassette-wrap{
+  display:flex;
+  justify-content:center;
+  margin:6px 0 22px;
+}
+.cassette{
+  width:100%;
+  max-width:420px;
+}
+.window-label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:9px;
+  fill:var(--slate-soft);
+  letter-spacing:0.06em;
+}
+.line-mark{
+  transition:opacity .5s ease;
+  opacity:0;
+}
+.line-mark.show{opacity:1;}
+
+/* ---------- Buttons ---------- */
+button{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-weight:600;
+  font-size:14.5px;
+  border:none;
+  border-radius:10px;
+  padding:13px 22px;
+  cursor:pointer;
+  transition:transform .15s ease, background .15s ease;
+}
+button:active{transform:scale(0.97);}
+.btn-primary{
+  background:var(--teal);
+  color:var(--paper);
+  width:100%;
+}
+.btn-primary:hover{background:var(--teal-dark);}
+.btn-secondary{
+  background:transparent;
+  color:var(--teal-dark);
+  border:1.5px solid var(--teal);
+  width:100%;
+}
+.btn-ghost{
+  background:transparent;
+  color:var(--slate-soft);
+  font-size:13px;
+  padding:8px 4px;
+}
+
+/* ---------- Timer ---------- */
+.timer-stage{text-align:center;}
+.timer-ring-wrap{
+  position:relative;
+  width:220px;
+  height:220px;
+  margin:8px auto 20px;
+}
+.timer-ring-wrap svg{transform:rotate(-90deg);}
+.timer-track{fill:none; stroke:var(--paper-dim); stroke-width:10;}
+.timer-progress{
+  fill:none;
+  stroke:var(--gold);
+  stroke-width:10;
+  stroke-linecap:round;
+  transition:stroke-dashoffset 1s linear;
+}
+.timer-readout{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+.timer-readout .time{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:38px;
+  font-weight:600;
+  color:var(--ink);
+}
+.timer-readout .status{
+  font-size:12px;
+  color:var(--slate-soft);
+  margin-top:4px;
+}
+.timer-controls{
+  display:flex;
+  gap:10px;
+  margin-top:6px;
+}
+
+/* ---------- Auswertungs-Zeilen ---------- */
+.marker-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 0;
+  border-top:1px solid var(--line);
+}
+.marker-row:first-of-type{border-top:none;}
+.marker-info .name{
+  font-weight:600;
+  font-size:14.5px;
+  color:var(--ink);
+}
+.marker-info .desc{
+  font-size:12px;
+  color:var(--slate-soft);
+}
+.toggle-group{
+  display:flex;
+  background:var(--paper-dim);
+  border-radius:8px;
+  padding:3px;
+  gap:2px;
+}
+.toggle-btn{
+  font-family:'IBM Plex Sans', sans-serif;
+  font-size:12px;
+  font-weight:600;
+  padding:8px 12px;
+  border-radius:6px;
+  background:transparent;
+  color:var(--slate-soft);
+}
+.toggle-btn.active[data-val="pos"]{background:var(--rose); color:#fff;}
+.toggle-btn.active[data-val="neg"]{background:var(--ok); color:#fff;}
+
+/* ---------- Ergebnis-Ausgabe ---------- */
+.result-banner{
+  border-radius:10px;
+  padding:16px 18px;
+  margin-bottom:14px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+}
+.result-banner.invalid{background:#F3E3C4; color:#7A5B12; border:1px solid #E0C177;}
+.result-banner.clean{background:#E4EFE6; color:var(--ok); border:1px solid #BFDDC6;}
+.result-banner.hit{background:#F5DFE2; color:#8A2A3E; border:1px solid #E9B9C1;}
+
+.finding{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:18px 18px 6px;
+  margin-bottom:14px;
+}
+.finding .name{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:17px;
+  color:var(--rose);
+  margin-bottom:10px;
+}
+.finding h3{
+  font-family:'IBM Plex Mono', monospace;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  font-size:10.5px;
+  color:var(--slate-soft);
+  margin:14px 0 6px;
+}
+.finding ul{
+  padding-left:18px;
+  font-size:14px;
+  color:var(--slate);
+}
+.finding li{margin-bottom:5px;}
+.doctor-note{
+  background:var(--paper-dim);
+  border-radius:8px;
+  padding:12px 14px;
+  font-size:13.5px;
+  color:var(--slate);
+  margin-top:10px;
+}
+.doctor-note strong{color:var(--ink);}
+
+.maps-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:10px;
+  background:var(--ink);
+  color:var(--paper);
+  font-size:13px;
+  padding:10px 16px;
+  width:auto;
+}
+
+.progress-steps{
+  display:flex;
+  gap:6px;
+  margin-bottom:18px;
+}
+.progress-steps .dot{
+  flex:1;
+  height:3px;
+  border-radius:2px;
+  background:rgba(246,243,236,0.15);
+}
+.progress-steps .dot.active{background:var(--gold);}
+
+/* ---------- Foto-Auswertung ---------- */
+.mode-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:18px;
+}
+.mode-tab{
+  flex:1;
+  background:var(--paper-dim);
+  color:var(--slate);
+  font-size:13px;
+  padding:10px;
+}
+.mode-tab.active{background:var(--ink); color:var(--paper);}
+
+.upload-box{
+  border:1.5px dashed var(--line);
+  border-radius:10px;
+  padding:22px;
+  text-align:center;
+  margin-bottom:16px;
+}
+.upload-box input[type=file]{
+  font-size:13px;
+}
+.upload-choice{
+  display:flex;
+  gap:10px;
+  margin-bottom:8px;
+}
+.upload-choice button{flex:1;}
+.upload-hint{
+  font-size:11.5px;
+  color:var(--slate-soft);
+  margin-top:8px;
+}
+#cameraSection{margin-top:10px;}
+#cameraVideo{
+  width:100%;
+  max-width:100%;
+  border-radius:8px;
+  background:#000;
+  display:block;
+}
+.camera-controls{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.canvas-frame{
+  position:relative;
+  display:inline-block;
+  margin-bottom:14px;
+  max-width:100%;
+}
+#photoCanvas{
+  display:block;
+  border-radius:8px;
+  max-width:100%;
+  background:var(--paper-dim);
+}
+.align-box{
+  position:absolute;
+  border:2px solid var(--gold);
+  background:rgba(201,154,60,0.08);
+  pointer-events:none;
+}
+.align-box .divider{
+  position:absolute;
+  top:0; bottom:0;
+  width:1px;
+  background:rgba(201,154,60,0.6);
+}
+.align-box .band{
+  position:absolute;
+  left:0; right:0;
+  background:rgba(23,122,115,0.18);
+}
+
+.slider-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:8px;
+}
+.slider-row label{
+  font-size:11.5px;
+  color:var(--slate-soft);
+  width:90px;
+  flex-shrink:0;
+}
+.slider-row input[type=range]{width:100%;}
+
+.debug-readout{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--slate-soft);
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:4px;
+  text-align:center;
+  margin:10px 0 4px;
+}
+.debug-readout .cell{
+  padding:6px 2px;
+  border-radius:6px;
+  background:var(--paper-dim);
+}
+.debug-readout .cell.pos{background:var(--rose); color:#fff;}
+.debug-readout .cell.neg{background:var(--ok); color:#fff;}
+
+.analysis-warning{
+  background:#F3E3C4;
+  color:#7A5B12;
+  border:1px solid #E0C177;
+  border-radius:8px;
+  padding:10px 14px;
+  font-size:13px;
+  margin-bottom:12px;
+}
+
+.ai-status{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12.5px;
+  color:var(--slate);
+  background:var(--paper-dim);
+  border-radius:8px;
+  padding:12px 14px;
+  margin:12px 0;
+}
+.ai-status.hit{background:#E4EFE6; color:var(--ok);}
+.ai-status.miss{background:#F3E3C4; color:#7A5B12;}
+
+footer.note{
+  text-align:center;
+  font-size:11.5px;
+  color:var(--slate-soft);
+  margin-top:8px;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="masthead">
+    <div class="brand">
+      <img src="logo-emblem.png" alt="Tenalytics Logo" class="brand-logo">
+      <div>
+        <div class="eyebrow">Jugend forscht · Diagnostik</div>
+        <h1>Tenalytics</h1>
+        <div class="subtitle">Multiplex-Schnelltest-Auswertung</div>
+      </div>
+    </div>
+    <div class="panel-count">RSV · Flu A/B · Corona</div>
+  </div>
+
+  <div class="progress-steps">
+    <div class="dot" data-step="1"></div>
+    <div class="dot" data-step="2"></div>
+    <div class="dot" data-step="3"></div>
+    <div class="dot" data-step="4"></div>
+  </div>
+
+  <!-- ===================== SCHRITT 1: START ===================== -->
+  <section id="step-1" class="card">
+    <h2>Test starten</h2>
+    <p>Gib die Probe wie gewohnt auf die Testkassette. Sobald du startest, läuft ein 10-Minuten-Timer. Lies das Ergebnis erst ab, wenn der Timer abgelaufen ist — vorher können Linien noch fehlen oder unklar sein.</p>
+
+    <div class="cassette-wrap">
+      <svg class="cassette" viewBox="0 0 400 140">
+        <rect x="4" y="4" width="392" height="132" rx="16" fill="var(--paper-dim)" stroke="var(--line)"/>
+        <rect x="20" y="20" width="360" height="60" rx="8" fill="#fff" stroke="var(--line)"/>
+        <text x="30" y="105" class="window-label">C · KONTROLLE</text>
+        <text x="115" y="105" class="window-label">RSV</text>
+        <text x="185" y="105" class="window-label">FLU A</text>
+        <text x="255" y="105" class="window-label">FLU B</text>
+        <text x="330" y="105" class="window-label">CORONA</text>
+        <line x1="55" y1="30" x2="55" y2="70" stroke="var(--slate-soft)" stroke-width="6" stroke-linecap="round" opacity="0.35"/>
+      </svg>
+    </div>
+
+    <button class="btn-primary" onclick="goToStep(2); startTimer();">Test starten &amp; Timer beginnen</button>
+  </section>
+
+  <!-- ===================== SCHRITT 2: TIMER ===================== -->
+  <section id="step-2" class="card hidden">
+    <h2>Einwirkzeit läuft</h2>
+    <p>Bitte warte, bis der Timer abgelaufen ist, bevor du die Kassette abliest.</p>
+
+    <div class="timer-stage">
+      <div class="timer-ring-wrap">
+        <svg width="220" height="220" viewBox="0 0 220 220">
+          <circle class="timer-track" cx="110" cy="110" r="96"/>
+          <circle id="timerProgress" class="timer-progress" cx="110" cy="110" r="96"
+                  stroke-dasharray="603" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-readout">
+          <div class="time" id="timeDisplay">10:00</div>
+          <div class="status" id="timeStatus">läuft…</div>
+        </div>
+      </div>
+      <div class="timer-controls">
+        <button class="btn-secondary" id="pauseBtn" onclick="togglePause()">Pause</button>
+        <button class="btn-ghost" onclick="skipTimer()">Timer überspringen (Testzwecke)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SCHRITT 3: ABLESEN ===================== -->
+  <section id="step-3" class="card hidden">
+    <h2>Kassette ablesen</h2>
+
+    <div class="mode-tabs">
+      <button type="button" class="mode-tab active" id="tabManual" onclick="switchMode('manual')">Manuell markieren</button>
+      <button type="button" class="mode-tab" id="tabPhoto" onclick="switchMode('photo')">Foto- &amp; KI-Analyse</button>
+    </div>
+
+    <!-- ---- Manuelle Eingabe ---- -->
+    <div id="manualPane">
+      <p>Markiere für jedes Fenster, ob eine Linie sichtbar ist — auch schwache Linien zählen als positiv.</p>
+      <div id="photoAppliedNote" class="analysis-warning hidden">Werte wurden aus der Fotoanalyse übernommen. Bitte prüfen und bei Bedarf korrigieren, bevor du auswertest.</div>
+      <div id="markerList"></div>
+      <button class="btn-primary" style="margin-top:16px;" onclick="evaluateResult()">Ergebnis auswerten</button>
+    </div>
+
+    <!-- ---- Foto- & KI-Analyse (Farbvergleich + eigenes Teachable-Machine-Modell) ---- -->
+    <div id="photoPane" class="hidden">
+      <p>Lade ein Foto der abgelesenen Kassette hoch oder nimm eins auf. Richte den goldenen Rahmen über dem Linien-Fenster aus (5 gleich breite Felder: C · RSV · Flu A · Flu B · Corona) und starte die Analyse — sie nutzt automatisch dein trainiertes KI-Modell, falls eines hinterlegt ist, und sonst den eingebauten Farbvergleich als Rückfallebene.</p>
+
+      <div class="upload-box">
+        <div class="upload-choice">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('photoInput').click()">Datei hochladen</button>
+          <button type="button" class="btn-secondary" onclick="askCameraPermission()">Kamera nutzen</button>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" style="display:none;">
+        <div class="upload-hint">Kamera braucht deine Erlaubnis im Browser und funktioniert nur über HTTPS (z. B. nach dem Hosten auf GitHub Pages/Netlify/Vercel — lokal als Datei geöffnet meist nicht). Gleiches gilt fürs KI-Modell (siehe <code>MODEL_URL</code> im Code).</div>
+
+        <div id="cameraConsent" class="hidden analysis-warning" style="text-align:left;">
+          <strong>Kamerazugriff erlauben?</strong><br>
+          Tenalytics möchte deine Kamera nutzen, um ein Foto der Testkassette aufzunehmen. Das Bild bleibt auf deinem Gerät und wird nur lokal ausgewertet.
+          <div class="camera-controls" style="margin-top:10px;">
+            <button type="button" class="btn-primary" onclick="startCamera()">Ja, Kamera erlauben</button>
+            <button type="button" class="btn-ghost" onclick="document.getElementById('cameraConsent').classList.add('hidden')">Nein</button>
+          </div>
+        </div>
+
+        <div id="cameraSection" class="hidden">
+          <video id="cameraVideo" autoplay playsinline muted></video>
+          <div class="camera-controls">
+            <button type="button" class="btn-primary" onclick="capturePhoto()">Foto aufnehmen</button>
+            <button type="button" class="btn-ghost" onclick="stopCamera()">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="canvasSection" class="hidden">
+        <div class="canvas-frame">
+          <canvas id="photoCanvas"></canvas>
+          <div id="alignBox" class="align-box"></div>
+        </div>
+
+        <div class="slider-row"><label>Position X</label><input type="range" id="boxX" min="0" max="90" value="10"></div>
+        <div class="slider-row"><label>Position Y</label><input type="range" id="boxY" min="0" max="90" value="40"></div>
+        <div class="slider-row"><label>Breite</label><input type="range" id="boxW" min="10" max="100" value="80"></div>
+        <div class="slider-row"><label>Höhe</label><input type="range" id="boxH" min="5" max="60" value="20"></div>
+        <div class="slider-row"><label>Empfindlichkeit</label><input type="range" id="boxSens" min="5" max="60" value="20"></div>
+
+        <button class="btn-primary" style="margin-top:6px;" onclick="analyzeImage()">Bild analysieren</button>
+
+        <div id="aiStatus" class="ai-status hidden"></div>
+        <div id="debugReadout" class="debug-readout hidden"></div>
+
+        <button class="btn-secondary hidden" id="applyPhotoBtn" style="margin-top:10px;" onclick="applyPhotoResults()">Werte übernehmen &amp; prüfen</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SCHRITT 4: ERGEBNIS ===================== -->
+  <section id="step-4" class="card hidden">
+    <h2>Ergebnis &amp; Empfehlungen</h2>
+    <div id="resultBanner"></div>
+    <div id="findings"></div>
+    <button class="btn-ghost" onclick="resetApp()">Neuen Test starten</button>
+  </section>
+
+  <footer class="note">Diese App ersetzt keine ärztliche Diagnose. Sie dient nur als Orientierungshilfe im Rahmen des Jugend-forscht-Projekts.</footer>
+</div>
+
+<script>
+/* ============================================================
+   INHALTE — hier kannst du Marker, Tipps & Medikamente anpassen
+   ============================================================ */
+const MARKERS = [
+  { id:"control", name:"Kontrolllinie (C)", desc:"Muss immer sichtbar sein", control:true },
+  { id:"rsv",     name:"RSV",               desc:"Respiratorisches Synzytial-Virus" },
+  { id:"fluA",    name:"Influenza A",       desc:"Grippe Typ A" },
+  { id:"fluB",    name:"Influenza B",       desc:"Grippe Typ B" },
+  { id:"corona",  name:"Corona (SARS-CoV-2)", desc:"COVID-19" },
+];
+
+const TIPS = {
+  rsv: {
+    label: "RSV",
+    meds: [
+      "Fiebersenkende/schmerzlindernde Mittel wie Paracetamol oder Ibuprofen (Dosierung laut Packungsbeilage beachten)",
+      "Kochsalz-Nasenspray oder -tropfen zum Freihalten der Atemwege",
+      "Hustenlöser (Expektorantien) aus der Apotheke, z. B. mit Efeu- oder Thymianextrakt"
+    ],
+    home: [
+      "Viel trinken — Wasser, verdünnte Säfte, Kräutertee",
+      "Kamillentee inhalieren oder trinken, wirkt schleimlösend und beruhigend",
+      "Raum gut befeuchten (z. B. feuchtes Handtuch am Heizkörper)",
+      "Ausreichend Ruhe und Schlaf"
+    ],
+    doctorAlways: "Bei Säuglingen, Kleinkindern, älteren Menschen oder Personen mit Vorerkrankungen (z. B. Asthma, Herzerkrankungen) sollte bei einem positiven RSV-Test grundsätzlich zeitnah eine Ärztin oder ein Arzt kontaktiert werden.",
+    doctorWarning: "Ärztlichen Rat einholen bei Atemnot, pfeifendem Atemgeräusch, bläulichen Lippen, hohem Fieber über mehrere Tage oder wenn es der betroffenen Person seit längerer Zeit spürbar schlechter geht."
+  },
+  fluA: {
+    label: "Influenza A",
+    meds: [
+      "Fiebersenker wie Paracetamol oder Ibuprofen",
+      "Elektrolytlösungen aus der Apotheke bei starkem Schwitzen/Flüssigkeitsverlust",
+      "Halsschmerztabletten oder -sprays (freiverkäuflich)"
+    ],
+    home: [
+      "Bettruhe und körperliche Schonung, um das Immunsystem zu unterstützen",
+      "Viel trinken, z. B. Kamillen- oder Holunderblütentee",
+      "Wadenwickel bei hohem Fieber",
+      "Warme Hühnersuppe — unterstützt die Flüssigkeitszufuhr und tut vielen gut"
+    ],
+    doctorAlways: "Personen über 60, Schwangere, chronisch Kranke oder Menschen mit geschwächtem Immunsystem sollten bei einem positiven Influenza-Test ärztlichen Rat einholen — antivirale Medikamente sind verschreibungspflichtig und wirken nur, wenn sie früh eingenommen werden.",
+    doctorWarning: "Ärztlichen Rat einholen bei Atembeschwerden, anhaltend hohem Fieber (über 3 Tage), starkem Krankheitsgefühl oder wenn es der Person seit längerer Zeit nicht besser geht."
+  },
+  fluB: {
+    label: "Influenza B",
+    meds: [
+      "Fiebersenker wie Paracetamol oder Ibuprofen",
+      "Elektrolytlösungen aus der Apotheke bei starkem Schwitzen/Flüssigkeitsverlust",
+      "Halsschmerztabletten oder -sprays (freiverkäuflich)"
+    ],
+    home: [
+      "Bettruhe und viel Schlaf",
+      "Kamillentee oder Ingwertee mit Honig",
+      "Ausreichend lüften, aber Zugluft vermeiden",
+      "Leichte, warme Mahlzeiten"
+    ],
+    doctorAlways: "Bei Kindern, älteren Menschen oder Personen mit Vorerkrankungen sollte bei positivem Testergebnis ärztlicher Rat eingeholt werden.",
+    doctorWarning: "Ärztlichen Rat einholen bei Atemnot, anhaltend hohem Fieber, starker Erschöpfung oder wenn es der Person seit längerer Zeit nicht besser geht."
+  },
+  corona: {
+    label: "Corona (SARS-CoV-2)",
+    meds: [
+      "Fiebersenker wie Paracetamol oder Ibuprofen",
+      "Nasenspray zur Linderung von Schnupfensymptomen",
+      "Lutschtabletten bei Halsschmerzen"
+    ],
+    home: [
+      "Isolation einhalten, um andere nicht anzustecken, und Kontakt zu Risikogruppen meiden",
+      "Viel trinken — warmer Kamillen- oder Fencheltee tut den Atemwegen gut",
+      "Regelmäßig lüften",
+      "Auf ausreichend Ruhe und Schlaf achten"
+    ],
+    doctorAlways: "Risikopatient:innen (z. B. hohes Alter, Vorerkrankungen, geschwächtes Immunsystem) sollten bei positivem Test zeitnah ärztlichen Rat einholen — verschreibungspflichtige Medikamente gegen COVID-19 wirken nur bei früher Einnahme.",
+    doctorWarning: "Ärztlichen Rat einholen bei Atemnot, Schmerzen/Druckgefühl im Brustkorb, anhaltendem hohem Fieber oder wenn es der Person seit längerer Zeit nicht besser geht."
+  }
+};
+
+const GENERAL_ADVICE = "Auch bei einem negativen Ergebnis auf allen Linien gilt: Wer sich seit längerer Zeit spürbar krank oder erschöpft fühlt, sollte nicht zu lange warten und ärztlichen Rat einholen — ein negativer Schnelltest schließt andere Ursachen nicht aus.";
+
+/* ============================================================
+   KI-KONFIGURATION (Teachable Machine)
+   ============================================================
+   MODEL_URL: Pfad/Link zu deinem exportierten Modell.
+   - Lokaler Export: Ordner "my_model" (mit model.json, metadata.json,
+     weights.bin) neben diese HTML-Datei legen -> "./my_model/"
+   - Oder den "gehosteten Link" aus Teachable Machine einsetzen,
+     z.B. "https://teachablemachine.withgoogle.com/models/XXXXXXXXX/"
+*/
+const MODEL_URL = "./my_model/";
+
+/* CLASS_ACTIONS: ordnet jeden Klassennamen aus deinem Teachable-
+   Machine-Modell den 5 Testfeldern zu (control/rsv/fluA/fluB/corona
+   -> "pos" oder "neg"). Der SCHLÜSSEL links muss exakt so heißen wie
+   der Klassenname, den du beim Training vergeben hast! */
+const CLASS_ACTIONS = {
+  "Negativ":              { control:"pos", rsv:"neg", fluA:"neg", fluB:"neg", corona:"neg" },
+  "Positiv RSV":          { control:"pos", rsv:"pos", fluA:"neg", fluB:"neg", corona:"neg" },
+  "Positiv Influenza A":  { control:"pos", rsv:"neg", fluA:"pos", fluB:"neg", corona:"neg" },
+  "Positiv Influenza B":  { control:"pos", rsv:"neg", fluA:"neg", fluB:"pos", corona:"neg" },
+  "Positiv Corona":       { control:"pos", rsv:"neg", fluA:"neg", fluB:"neg", corona:"pos" },
+  "Ungueltig":            { control:"neg", rsv:"neg", fluA:"neg", fluB:"neg", corona:"neg" }
+};
+
+/* ============================================================
+   ZUSTAND & LOGIK
+   ============================================================ */
+const state = { markers:{}, timerId:null, remaining:600, paused:false };
+
+function buildMarkerList(){
+  const list = document.getElementById("markerList");
+  list.innerHTML = "";
+  MARKERS.forEach(m=>{
+    state.markers[m.id] = "neg";
+    const row = document.createElement("div");
+    row.className = "marker-row";
+    row.innerHTML = `
+      <div class="marker-info">
+        <div class="name">${m.name}</div>
+        <div class="desc">${m.desc}</div>
+      </div>
+      <div class="toggle-group" data-marker="${m.id}">
+        <button type="button" class="toggle-btn active" data-val="neg">nicht sichtbar</button>
+        <button type="button" class="toggle-btn" data-val="pos">sichtbar</button>
+      </div>`;
+    list.appendChild(row);
+  });
+  document.querySelectorAll(".toggle-group").forEach(group=>{
+    group.querySelectorAll(".toggle-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        group.querySelectorAll(".toggle-btn").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        state.markers[group.dataset.marker] = btn.dataset.val;
+      });
+    });
+  });
+}
+buildMarkerList();
+
+function goToStep(n){
+  [1,2,3,4].forEach(i=>{
+    document.getElementById("step-"+i).classList.toggle("hidden", i!==n);
+  });
+  document.querySelectorAll(".progress-steps .dot").forEach(d=>{
+    d.classList.toggle("active", parseInt(d.dataset.step) <= n);
+  });
+}
+
+/* ---------- Timer ---------- */
+const CIRC = 603; // 2 * pi * r (r=96)
+function updateTimerUI(){
+  const min = Math.floor(state.remaining/60).toString().padStart(2,"0");
+  const sec = (state.remaining%60).toString().padStart(2,"0");
+  document.getElementById("timeDisplay").textContent = `${min}:${sec}`;
+  const progress = state.remaining/600;
+  document.getElementById("timerProgress").style.strokeDashoffset = CIRC*(1-progress);
+  document.getElementById("timeStatus").textContent = state.paused ? "pausiert" : "läuft…";
+}
+function startTimer(){
+  state.remaining = 600;
+  state.paused = false;
+  updateTimerUI();
+  clearInterval(state.timerId);
+  state.timerId = setInterval(()=>{
+    if(state.paused) return;
+    state.remaining--;
+    updateTimerUI();
+    if(state.remaining<=0){
+      clearInterval(state.timerId);
+      document.getElementById("timeStatus").textContent = "fertig — jetzt ablesen";
+      goToStep(3);
+    }
+  },1000);
+}
+function togglePause(){
+  state.paused = !state.paused;
+  document.getElementById("pauseBtn").textContent = state.paused ? "Fortsetzen" : "Pause";
+  updateTimerUI();
+}
+function skipTimer(){
+  clearInterval(state.timerId);
+  state.remaining = 0;
+  goToStep(3);
+}
+
+/* ---------- Auswertung ---------- */
+function evaluateResult(){
+  goToStep(4);
+  const banner = document.getElementById("resultBanner");
+  const findingsEl = document.getElementById("findings");
+  findingsEl.innerHTML = "";
+
+  if(state.markers.control !== "pos"){
+    banner.className = "result-banner invalid";
+    banner.innerHTML = "<strong>Ungültig.</strong> Die Kontrolllinie (C) ist nicht sichtbar. Das Testergebnis kann nicht gewertet werden — bitte wiederhole den Test mit einer neuen Kassette.";
+    return;
+  }
+
+  const positives = MARKERS.filter(m=>!m.control && state.markers[m.id]==="pos");
+
+  if(positives.length===0){
+    banner.className = "result-banner clean";
+    banner.innerHTML = "<strong>Negativ.</strong> Auf keiner der vier Linien (RSV, Influenza A, Influenza B, Corona) wurde eine Reaktion erkannt.";
+    const note = document.createElement("div");
+    note.className = "doctor-note";
+    note.innerHTML = `<strong>Trotzdem beachten:</strong> ${GENERAL_ADVICE}`;
+    findingsEl.appendChild(note);
+    return;
+  }
+
+  banner.className = "result-banner hit";
+  banner.innerHTML = `<strong>Positiv auf:</strong> ${positives.map(p=>TIPS[p.id].label).join(", ")}. Kontrolllinie ist gültig.`;
+
+  positives.forEach(p=>{
+    const t = TIPS[p.id];
+    const box = document.createElement("div");
+    box.className = "finding";
+    box.innerHTML = `
+      <div class="name">${t.label} — positiv</div>
+      <h3>Freiverkäufliche Mittel</h3>
+      <ul>${t.meds.map(x=>`<li>${x}</li>`).join("")}</ul>
+      <h3>Was zuhause hilft</h3>
+      <ul>${t.home.map(x=>`<li>${x}</li>`).join("")}</ul>
+      <div class="doctor-note"><strong>Ärztlichen Rat einholen:</strong> ${t.doctorAlways} ${t.doctorWarning}</div>
+      <button class="maps-btn" onclick="findDoctors()">Ärzte in der Nähe finden</button>
+    `;
+    findingsEl.appendChild(box);
+  });
+}
+
+function findDoctors(){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const {latitude, longitude} = pos.coords;
+        window.open(`https://www.google.com/maps/search/Hausarzt/@${latitude},${longitude},14z`, "_blank");
+      },
+      ()=>{
+        window.open(`https://www.google.com/maps/search/Hausarzt+in+der+Nähe`, "_blank");
+      }
+    );
+  } else {
+    window.open(`https://www.google.com/maps/search/Hausarzt+in+der+Nähe`, "_blank");
+  }
+}
+
+function setMarkerState(id, val){
+  state.markers[id] = val;
+  const group = document.querySelector(`.toggle-group[data-marker="${id}"]`);
+  if(!group) return;
+  group.querySelectorAll(".toggle-btn").forEach(b=>{
+    b.classList.toggle("active", b.dataset.val === val);
+  });
+}
+
+/* ---------- Modus-Umschaltung (Manuell / Foto / KI) ---------- */
+function switchMode(mode){
+  document.getElementById("tabManual").classList.toggle("active", mode==="manual");
+  document.getElementById("tabPhoto").classList.toggle("active", mode==="photo");
+  document.getElementById("manualPane").classList.toggle("hidden", mode!=="manual");
+  document.getElementById("photoPane").classList.toggle("hidden", mode!=="photo");
+  if(mode!=="photo") stopCamera();
+}
+
+/* ---------- Foto laden & auf Canvas zeichnen ---------- */
+let loadedImage = null;
+const MAX_CANVAS_W = 320;
+
+function setupCanvasFromImage(img){
+  loadedImage = img;
+  const canvas = document.getElementById("photoCanvas");
+  const scale = MAX_CANVAS_W / img.width;
+  canvas.width = MAX_CANVAS_W;
+  canvas.height = Math.round(img.height * scale);
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  document.getElementById("canvasSection").classList.remove("hidden");
+  document.getElementById("debugReadout").classList.add("hidden");
+  document.getElementById("applyPhotoBtn").classList.add("hidden");
+  drawAlignBox();
+  analyzeImage(); // Foto liegt vor -> KI/Farbvergleich läuft automatisch los
+}
+
+document.getElementById("photoInput").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const img = new Image();
+  img.onload = ()=> setupCanvasFromImage(img);
+  img.src = URL.createObjectURL(file);
+});
+
+/* ---------- Live-Kamera (getUserMedia) ---------- */
+let cameraStream = null;
+
+/* Schritt 1: eigene In-App-Abfrage, bevor der echte Browser-Berechtigungs-
+   Dialog des Betriebssystems ausgelöst wird. */
+function askCameraPermission(){
+  document.getElementById("cameraConsent").classList.remove("hidden");
+}
+
+/* Schritt 2: erst nach "Ja" hier wird getUserMedia aufgerufen — das
+   löst dann den echten Kamera-Erlaubnis-Dialog von Browser/Handy aus. */
+function startCamera(){
+  document.getElementById("cameraConsent").classList.add("hidden");
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    alert("Dieser Browser unterstützt keinen direkten Kamerazugriff. Bitte nutze stattdessen 'Datei hochladen'.");
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
+    .then(stream=>{
+      cameraStream = stream;
+      const video = document.getElementById("cameraVideo");
+      video.srcObject = stream;
+      document.getElementById("cameraSection").classList.remove("hidden");
+    })
+    .catch(err=>{
+      alert("Kamera konnte nicht gestartet werden (" + err.message + "). Bitte Kamera-Berechtigung erlauben oder eine Datei hochladen.");
+    });
+}
+
+function capturePhoto(){
+  const video = document.getElementById("cameraVideo");
+  if(!video.videoWidth){ return; } // Video noch nicht bereit
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = video.videoWidth;
+  tempCanvas.height = video.videoHeight;
+  tempCanvas.getContext("2d").drawImage(video, 0, 0);
+  const img = new Image();
+  img.onload = ()=> setupCanvasFromImage(img); // löst automatisch analyzeImage() aus
+  img.src = tempCanvas.toDataURL("image/png");
+  stopCamera();
+}
+
+function stopCamera(){
+  if(cameraStream){
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+  }
+  document.getElementById("cameraSection").classList.add("hidden");
+  document.getElementById("cameraConsent").classList.add("hidden");
+}
+
+["boxX","boxY","boxW","boxH"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", drawAlignBox);
+});
+
+function getBoxRect(){
+  const canvas = document.getElementById("photoCanvas");
+  const xPct = +document.getElementById("boxX").value;
+  const yPct = +document.getElementById("boxY").value;
+  const wPct = +document.getElementById("boxW").value;
+  const hPct = +document.getElementById("boxH").value;
+  return {
+    x: Math.round(canvas.width * xPct/100),
+    y: Math.round(canvas.height * yPct/100),
+    w: Math.round(canvas.width * wPct/100),
+    h: Math.round(canvas.height * hPct/100)
+  };
+}
+
+function drawAlignBox(){
+  if(!loadedImage) return;
+  const canvas = document.getElementById("photoCanvas");
+  const box = getBoxRect();
+  const el = document.getElementById("alignBox");
+  el.style.left = box.x + "px";
+  el.style.top = box.y + "px";
+  el.style.width = box.w + "px";
+  el.style.height = box.h + "px";
+  el.innerHTML = "";
+  // Trennlinien zwischen den 5 Feldern
+  for(let i=1;i<5;i++){
+    const d = document.createElement("div");
+    d.className = "divider";
+    d.style.left = (box.w/5*i) + "px";
+    el.appendChild(d);
+  }
+  // Signalband in der Mitte (dort wird die Linie gesucht)
+  const band = document.createElement("div");
+  band.className = "band";
+  band.style.top = (box.h*0.4) + "px";
+  band.style.height = (box.h*0.2) + "px";
+  el.appendChild(band);
+}
+
+/* ---------- Bildanalyse: Linien anhand von Farbunterschied erkennen ---------- */
+function avgColor(ctx, x, y, w, h, canvasW, canvasH){
+  x = Math.max(0, Math.min(x, canvasW-1));
+  y = Math.max(0, Math.min(y, canvasH-1));
+  w = Math.max(1, Math.min(w, canvasW-x));
+  h = Math.max(1, Math.min(h, canvasH-y));
+  const data = ctx.getImageData(x, y, w, h).data;
+  let r=0,g=0,b=0,n=0;
+  for(let i=0;i<data.length;i+=4){ r+=data[i]; g+=data[i+1]; b+=data[i+2]; n++; }
+  return { r:r/n, g:g/n, b:b/n };
+}
+function colorDistance(a,b){
+  return Math.sqrt((a.r-b.r)**2 + (a.g-b.g)**2 + (a.b-b.b)**2);
+}
+
+let lastAnalysis = null;   // Ergebnis des Farbvergleichs (Fallback)
+let lastAI = null;         // Ergebnis der KI-Klassifikation (bevorzugt, falls vorhanden)
+let aiModel = null;
+let aiLoadFailed = false;
+
+/* Lädt das Teachable-Machine-Modell einmalig bei Bedarf. Schlägt es fehl
+   (kein Modell hinterlegt, falscher Pfad, kein Webserver …), wird das
+   einfach vermerkt und die App nutzt automatisch den Farbvergleich. */
+async function ensureAIModel(){
+  if(aiModel || aiLoadFailed) return aiModel;
+  try{
+    aiModel = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+  }catch(err){
+    aiLoadFailed = true;
+    console.warn("KI-Modell nicht geladen:", err.message);
+  }
+  return aiModel;
+}
+
+/* Analysiert das aktuelle Foto auf dem Canvas: zuerst per KI-Modell
+   (falls vorhanden), zusätzlich immer per Farbvergleich als Rückfallebene
+   und zur Kontrolle. */
+async function analyzeImage(){
+  if(!loadedImage) return;
+
+  const statusEl = document.getElementById("aiStatus");
+  statusEl.classList.remove("hidden", "hit", "miss");
+  statusEl.textContent = "KI-Modell wird geprüft…";
+
+  // ---- 1) Farbvergleich (funktioniert immer, dient als Rückfallebene) ----
+  const canvas = document.getElementById("photoCanvas");
+  const ctx = canvas.getContext("2d");
+  const box = getBoxRect();
+  const threshold = +document.getElementById("boxSens").value;
+  const colW = box.w / 5;
+  const bandH = Math.max(2, Math.round(box.h*0.18));
+  const midY = box.y + Math.round(box.h*0.4);
+  const midH = Math.max(2, Math.round(box.h*0.2));
+
+  const readout = document.getElementById("debugReadout");
+  readout.innerHTML = "";
+  readout.classList.remove("hidden");
+
+  const results = {};
+  MARKERS.forEach((m,i)=>{
+    const colX = Math.round(box.x + i*colW);
+    const colWpx = Math.max(2, Math.round(colW));
+    const bgTop = avgColor(ctx, colX, box.y, colWpx, bandH, canvas.width, canvas.height);
+    const bgBottom = avgColor(ctx, colX, box.y+box.h-bandH, colWpx, bandH, canvas.width, canvas.height);
+    const bg = { r:(bgTop.r+bgBottom.r)/2, g:(bgTop.g+bgBottom.g)/2, b:(bgTop.b+bgBottom.b)/2 };
+    const signal = avgColor(ctx, colX, midY, colWpx, midH, canvas.width, canvas.height);
+    const diff = colorDistance(signal, bg);
+    const positive = diff > threshold;
+    results[m.id] = { diff: Math.round(diff), positive };
+
+    const cell = document.createElement("div");
+    cell.className = "cell " + (positive ? "pos" : "neg");
+    cell.textContent = m.name.split(" ")[0] + " " + Math.round(diff);
+    readout.appendChild(cell);
+  });
+  lastAnalysis = results;
+
+  if(!results.control.positive){
+    readout.insertAdjacentHTML("beforebegin", `<div class="analysis-warning" id="ctrlWarning">Kontrolllinie (C) per Farbvergleich nicht eindeutig erkannt. Rahmen genauer ausrichten oder Empfindlichkeit anpassen.</div>`);
+  } else {
+    const existing = document.getElementById("ctrlWarning");
+    if(existing) existing.remove();
+  }
+
+  // ---- 2) KI-Klassifikation (falls ein Modell unter MODEL_URL liegt) ----
+  lastAI = null;
+  const model = await ensureAIModel();
+  if(model){
+    const predictions = await model.predict(canvas);
+    const top = predictions.slice().sort((a,b)=>b.probability-a.probability)[0];
+    lastAI = top;
+    if(CLASS_ACTIONS[top.className]){
+      statusEl.className = "ai-status hit";
+      statusEl.textContent = `KI erkennt: "${top.className}" (${(top.probability*100).toFixed(0)}% sicher) — wird bei "Werte übernehmen" bevorzugt verwendet.`;
+    } else {
+      statusEl.className = "ai-status miss";
+      statusEl.textContent = `KI erkennt "${top.className}", aber diese Klasse ist noch nicht in CLASS_ACTIONS hinterlegt. Es wird der Farbvergleich verwendet.`;
+    }
+  } else {
+    statusEl.className = "ai-status miss";
+    statusEl.textContent = "Kein KI-Modell gefunden (MODEL_URL im Code prüfen) — es wird der eingebaute Farbvergleich verwendet.";
+  }
+
+  document.getElementById("applyPhotoBtn").classList.remove("hidden");
+}
+
+/* Übernimmt das beste verfügbare Ergebnis in die manuellen Regler:
+   KI geht vor, wenn ihre Klasse in CLASS_ACTIONS hinterlegt ist —
+   sonst wird der Farbvergleich verwendet. */
+function applyPhotoResults(){
+  const note = document.getElementById("photoAppliedNote");
+
+  if(lastAI && CLASS_ACTIONS[lastAI.className]){
+    const mapping = CLASS_ACTIONS[lastAI.className];
+    Object.keys(mapping).forEach(key => setMarkerState(key, mapping[key]));
+    note.textContent = `KI-Ergebnis übernommen: "${lastAI.className}" (${(lastAI.probability*100).toFixed(0)}% sicher). Bitte prüfen und bei Bedarf korrigieren, bevor du auswertest.`;
+  } else if(lastAnalysis){
+    MARKERS.forEach(m=>{
+      setMarkerState(m.id, lastAnalysis[m.id].positive ? "pos" : "neg");
+    });
+    note.textContent = "Werte aus dem Farbvergleich übernommen (kein passendes KI-Ergebnis). Bitte prüfen und bei Bedarf korrigieren, bevor du auswertest.";
+  } else {
+    return;
+  }
+
+  note.classList.remove("hidden");
+  switchMode("manual");
+}
+
+function resetApp(){
+  clearInterval(state.timerId);
+  stopCamera();
+  loadedImage = null;
+  lastAnalysis = null;
+  lastAI = null;
+  document.getElementById("photoInput").value = "";
+  document.getElementById("canvasSection").classList.add("hidden");
+  document.getElementById("photoAppliedNote").classList.add("hidden");
+  document.getElementById("aiStatus").classList.add("hidden");
+  buildMarkerList();
+  switchMode("manual");
+  goToStep(1);
+}
+
+goToStep(1);
+
+/* PWA: Service Worker registrieren, damit Android "Zum Startbildschirm
+   hinzufügen" anbietet und die App wie eine echte App aussieht/startet. */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(err=>{
+      console.warn("Service Worker nicht registriert:", err.message);
+    });
+  });
+}
+</script>
+</body>
+</html>
